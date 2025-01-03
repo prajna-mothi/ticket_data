@@ -4,18 +4,17 @@ import requests
 import json
 
 #Define your Google Drive file ID
-file_id = "1LYMx9pCA1EbTTGMw3SzVBYLrbEphnt7V"
+file_id = "1U4c3J10gDrBqho3yHZoZJlfPzkwz5tpy"
 
-# # Construct the download URL
-file_url = f"https://drive.google.com/uc?id={file_id}"
+# Construct the download URL
+file_url = f"https://drive.google.com/uc?id=1U4c3J10gDrBqho3yHZoZJlfPzkwz5tpy"
 
-# # Fetch the file content
+# Fetch the file content
 response = requests.get(file_url)
- if response.status_code == 200:
-     data = response.json()
- else:
-     st.error("Failed to load the sensitive file from Google Drive.")
-
+if response.status_code == 200:
+    data = response.json()
+else:
+    st.error("Failed to load the sensitive file from Google Drive.")
 
 
 
