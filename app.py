@@ -7,7 +7,7 @@ import json
 file_id = "1U4c3J10gDrBqho3yHZoZJlfPzkwz5tpy"
 
 # Construct the download URL
-file_url = f"https://drive.google.com/uc?id={file_id}"
+file_url = f"https://drive.google.com/uc?id=1U4c3J10gDrBqho3yHZoZJlfPzkwz5tpy"
 
 # Fetch the file content
 response = requests.get(file_url)
