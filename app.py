@@ -3,11 +3,11 @@ import json
 import requests
 import json
 
-#Define your Google Drive file ID
+# Define your Google Drive file ID
 file_id = "1LYMx9pCA1EbTTGMw3SzVBYLrbEphnt7V"
 
 # Construct the download URL
-file_url = f"https://drive.google.com/uc?id=1LYMx9pCA1EbTTGMw3SzVBYLrbEphnt7V"
+file_url = f"https://drive.google.com/uc?id={file_id}"
 
 # Fetch the file content
 response = requests.get(file_url)
