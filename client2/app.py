@@ -23,7 +23,7 @@ else:
 # with open(json_file_path, "r", encoding="utf-8") as f:
 #     data_from_json = json.load(f)
 
-df = pd.DataFrame(data_from_json)
+df = pd.DataFrame(data)
 
 # Streamlit App
 st.title("HyperSight Dashboard")
