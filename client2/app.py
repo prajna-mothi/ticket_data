@@ -17,23 +17,19 @@ else:
 
 
 # Load JSON data
-# json_file_path = '/Users/prajnamothi/Documents/HyperSight/Greenely/all_data.json'
+# json_file_path = '/Users/prajnamothi/Documents/HyperSight/Greenely/all_data.json' # Your JSON file name
 
 # # Load the JSON into a DataFrame
 # with open(json_file_path, "r", encoding="utf-8") as f:
 #     data_from_json = json.load(f)
 
-df = pd.DataFrame(data)
-
-# Calculate the total number of tickets
-total_tickets = len(df)
+df = pd.DataFrame(data_from_json)
 
 # Streamlit App
 st.title("HyperSight Dashboard")
 
 # Sidebar Content
 st.sidebar.header("Dashboard Information")
-st.sidebar.markdown(f"**Total Tickets:** {total_tickets}")
 
 # Add a filter for report periods
 report_periods = sorted(df["report_period"].unique())
@@ -42,16 +38,15 @@ selected_report_period = st.sidebar.selectbox("Report Period", report_periods)
 # Filter the DataFrame by report period
 filtered_df = df[df["report_period"] == selected_report_period]
 
-# If there are no tickets in the selected report period
-if filtered_df.empty:
-    st.sidebar.write("No tickets available for the selected report period.")
-else:
-    # Add company name to the sidebar
-    st.sidebar.markdown(f"**Company Name:** {filtered_df['company_name'].iloc[0]}")
-    st.sidebar.markdown(f"**Report Period:** {selected_report_period}")
+# Calculate the total number of tickets based on the filtered DataFrame
+total_tickets = len(filtered_df)
+
+# Display total tickets in the sidebar
+st.sidebar.markdown(f"**Total Tickets:** {total_tickets}")
 
 # Sidebar Filters
 st.sidebar.header("Filters")
+
 # Add ticket counts to the categories
 category_counts = filtered_df["category"].value_counts()
 categories_with_counts = [
