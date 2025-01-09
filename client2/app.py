@@ -18,6 +18,7 @@ else:
 
 
 df = pd.DataFrame(data)
+st.set_page_config(layout="wide")
 
 # Streamlit App
 st.title("HyperSight Dashboard")
