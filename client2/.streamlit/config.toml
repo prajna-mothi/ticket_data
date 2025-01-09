@@ -1,9 +1,0 @@
-[theme]
-base = "light"
-primaryColor = "blue"
-backgroundColor = "white"
-secondaryBackgroundColor = "#f0f0f5"
-textColor = "black"
-
-[browser]
-layout = "wide"
