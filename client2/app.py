@@ -16,12 +16,6 @@ else:
     st.error("Failed to load the sensitive file from Google Drive.")
 
 
-# Load JSON data
-# json_file_path = '/Users/prajnamothi/Documents/HyperSight/Greenely/all_data.json' # Your JSON file name
-
-# # Load the JSON into a DataFrame
-# with open(json_file_path, "r", encoding="utf-8") as f:
-#     data_from_json = json.load(f)
 
 df = pd.DataFrame(data)
 
@@ -99,7 +93,7 @@ if responsible_department != "All":
     filtered_df = filtered_df[filtered_df["responsible_department"] == responsible_department]
 
 # Add a toggle button for sorting
-sort_ascending = st.sidebar.checkbox("Sort by Ticket Volume (Ascending)")
+sort_ascending = st.sidebar.checkbox("Sort by Ticket Volume")
 
 # Display Dashboard Content
 if not filtered_df.empty:
@@ -109,11 +103,11 @@ if not filtered_df.empty:
         ascending=sort_ascending
     ).index
 
-    # Display sorted common issues
+    # Display sorted common issues with numbering
     st.markdown(f"### Subcategory: {selected_subcategory} ({len(filtered_df)} total tickets)")
-    for common_issue in sorted_common_issues:
+    for idx, common_issue in enumerate(sorted_common_issues, start=1):
         group = filtered_df[filtered_df["common_issue"] == common_issue]
-        st.markdown(f"#### Common Issue: {common_issue} ({len(group)} tickets)")
+        st.markdown(f"#### {idx}. Common Issue: {common_issue} ({len(group)} tickets)")
 
         # Include issue_summary, responsible_department, justification
         st.markdown(f"**Issue Summary:** {group['issue_summary'].iloc[0]}")
