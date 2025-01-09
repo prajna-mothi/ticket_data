@@ -16,7 +16,7 @@ else:
 
 
 df = pd.DataFrame(data)
-
+df['category'] = df['category'].replace('Andra', 'Övrigt')
 st.set_page_config(layout="wide")
 
 # Streamlit App
