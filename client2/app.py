@@ -1,184 +1,140 @@
 import streamlit as st
-import pandas as pd
+import json
 import requests
 import json
 
-# Define your Google Drive file ID
-file_id = "1G6rCx2epI-Bn-FiCPR7v-vcv9WAgmaJE"
+
 
 # Construct the download URL
-file_url = f"https://drive.google.com/uc?id={file_id}"
+file_url = f"https://drive.google.com/uc?id=1RZyX1RV7Iqg3OgVxue644pI89v-PNEEB"
 
-# Fetch the JSON file content
+# Fetch the file content
 response = requests.get(file_url)
 if response.status_code == 200:
     data = response.json()
 else:
-    st.error("Failed to load the JSON file from Google Drive.")
-    st.stop()
-# with open("dashboard_with_tickets.json", "r") as f:
-#     data = json.load(f)
+    st.error("Failed to load the sensitive file from Google Drive.")
 
 
+# Load JSON data
+# json_file_path = '/Users/prajnamothi/Documents/HyperSight/Greenely/all_data.json'
 
+# # Load the JSON into a DataFrame
+# with open(json_file_path, "r", encoding="utf-8") as f:
+#     data_from_json = json.load(f)
 
-# Set page configuration (this must be the first Streamlit command)
-st.set_page_config(layout="wide")
+df = pd.DataFrame(data)
 
+# Calculate the total number of tickets
+total_tickets = len(df)
 
-
-# Extract key fields from JSON and convert to a DataFrame
-@st.cache_data
-def flatten_json(data):
-    rows = []
-    for entry in data:
-        category = entry['category']
-        subcategory = entry['subcategory']
-        report_period = entry['report_period']
-        company_name = entry['company_name']
-        ticket_count = entry['ticket_count']
-        common_issue_count = entry['common_issue_count']
-        for issue in entry['common_issues']:
-            issue_mapped = issue['issue_mapped']
-            issue_summary = issue['issue_summary']
-            responsible_department = issue['responsible_department']
-            responsible_department_justification = issue['responsible_department_justification']
-            issue_ticket_count = issue['ticket_count']
-            for ticket in issue['tickets']:
-                rows.append({
-                    "category": category,
-                    "subcategory": subcategory,
-                    "report_period": report_period,
-                    "company_name": company_name,
-                    "ticket_count": ticket_count,
-                    "common_issue_count": common_issue_count,
-                    "issue_mapped": issue_mapped,
-                    "issue_summary": issue_summary,
-                    "responsible_department": responsible_department,
-                    "responsible_department_justification": responsible_department_justification,
-                    "issue_ticket_count": issue_ticket_count,
-                    "ticket_id": ticket['id'],
-                    "state": ticket['state'],
-                    "read": ticket['read'],
-                    "priority": ticket['priority'],
-                    "issue": ticket['issue'],
-                    "summary": ticket['summary'],
-                    "sentiment": ticket['sentiment'],
-                    "link": ticket['link'],
-                })
-    return pd.DataFrame(rows)
-
-# Convert the JSON to a DataFrame
-df = flatten_json(data)
-
-# Extract unique values for filters
-report_periods = df["report_period"].unique()
-categories = df["category"].unique()
-company_name = df["company_name"].iloc[0]  # Assuming all rows have the same company name
-
-# Calculate ticket counts for each category
-category_ticket_counts = df.groupby("category").size().to_dict()
-
-# Add custom CSS for sticky top section
-st.markdown(
-    """
-    <style>
-    .sticky-top {
-        position: -webkit-sticky;
-        position: sticky;
-        top: 0;
-        background-color: white;
-        padding: 10px 0;
-        z-index: 1000;
-        border-bottom: 2px solid #f0f0f0;
-    }
-    .wide-layout {
-        display: flex;
-        justify-content: space-between;
-        gap: 20px;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-# Sticky Top Section
-st.markdown('<div class="sticky-top">', unsafe_allow_html=True)
+# Streamlit App
 st.title("HyperSight Dashboard")
-st.subheader(company_name)
 
-# Wider layout for filters
-st.markdown('<div class="wide-layout">', unsafe_allow_html=True)
+# Sidebar Content
+st.sidebar.header("Dashboard Information")
+st.sidebar.markdown(f"**Total Tickets:** {total_tickets}")
 
-# Category Filter with ticket counts displayed
-st.markdown('<div style="flex: 1;">', unsafe_allow_html=True)
-selected_category = st.radio(
-    "Select Category",
-    [f"{category} ({category_ticket_counts[category]})" for category in sorted(categories)],
-)
-# Extract the category name without the ticket count
-selected_category = selected_category.split(" (")[0]
-st.markdown('</div>', unsafe_allow_html=True)
+# Add a filter for report periods
+report_periods = sorted(df["report_period"].unique())
+selected_report_period = st.sidebar.selectbox("Report Period", report_periods)
 
-# Report Period Filter
-st.markdown('<div style="flex: 1;">', unsafe_allow_html=True)
-report_period_filter = st.selectbox("Report Period", sorted(report_periods))
-st.markdown('</div>', unsafe_allow_html=True)
+# Filter the DataFrame by report period
+filtered_df = df[df["report_period"] == selected_report_period]
 
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Apply Report Period Filter
-filtered_df = df[df["report_period"] == report_period_filter]
-
-# Apply Category Filter (mandatory)
-filtered_df = filtered_df[filtered_df["category"] == selected_category]
-
-# Group and display details by Subcategory and Issues
-if not filtered_df.empty:
-    for subtopic, subtopic_group in filtered_df.groupby("subcategory"):
-        subtopic_count = len(subtopic_group)  # Calculate total tickets for the subtopic
-        st.subheader(f"Subcategory: {subtopic} ({subtopic_count} tickets)")
-
-        # Add a dynamic Responsible Department filter below the Subcategory label
-        departments = subtopic_group["responsible_department"].unique()
-        selected_department = st.selectbox(
-            f"Filter Responsible Department for {subtopic}:", ["All"] + sorted(departments)
-        )
-
-        # Apply Responsible Department Filter if not "All"
-        if selected_department != "All":
-            subtopic_group = subtopic_group[subtopic_group["responsible_department"] == selected_department]
-
-        # Display Issues within the Subcategory
-        for issue, issue_group in subtopic_group.groupby("issue_mapped"):
-            issue_ticket_count = len(issue_group)  # Calculate ticket count for the issue
-            issue_summary = issue_group["issue_summary"].iloc[0]
-
-            # Format issue summary as bullet points
-            points = [point.strip() for point in issue_summary.split("\n") if point.strip()]
-            formatted_summary = "\n".join(f"- {point}" for point in points)
-
-            st.markdown(
-                f"""
-                <div style="background-color: #f9f9f9; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
-                    <h4>{issue} ({issue_ticket_count} tickets)</h4>
-                    <p><b>Issue Summary:</b></p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            st.markdown(formatted_summary)  # Render bullet points using Markdown
-
-            with st.expander("View Tickets"):
-                for _, ticket in issue_group.iterrows():
-                    st.markdown(f"**Ticket ID:** {ticket['ticket_id']}")
-                    st.markdown(f"**State:** {ticket['state']}")
-                    st.markdown(f"**Read Status:** {ticket['read']}")
-                    st.markdown(f"**Priority:** {ticket['priority']}")
-                    st.markdown(f"**Issue:** {ticket['issue']}")
-                    st.markdown(f"**Summary:** {ticket['summary']}")
-                    st.markdown(f"**Sentiment:** {ticket['sentiment']}")
-                    st.markdown(f"[View Ticket]({ticket['link']})")
-                    st.markdown("---")
+# If there are no tickets in the selected report period
+if filtered_df.empty:
+    st.sidebar.write("No tickets available for the selected report period.")
 else:
-    st.warning("No data found for the selected filters.")
+    # Add company name to the sidebar
+    st.sidebar.markdown(f"**Company Name:** {filtered_df['company_name'].iloc[0]}")
+    st.sidebar.markdown(f"**Report Period:** {selected_report_period}")
+
+# Sidebar Filters
+st.sidebar.header("Filters")
+# Add ticket counts to the categories
+category_counts = filtered_df["category"].value_counts()
+categories_with_counts = [
+    (category, count) for category, count in category_counts.items()
+]
+
+# Reorder to place "Batterier" at the top and "Andra" at the bottom
+categories_with_counts = sorted(
+    categories_with_counts, key=lambda x: (x[0] != "Batterier", x[0] == "Andra", x[0])
+)
+
+categories_display = [
+    f"{category} ({count} tickets)" for category, count in categories_with_counts
+]
+categories = [category for category, _ in categories_with_counts]
+
+selected_category_display = st.sidebar.selectbox(
+    "Category",
+    categories_display,
+)
+selected_category = categories[categories_display.index(selected_category_display)]
+
+# Add ticket counts to the subcategories
+subcategory_counts = (
+    filtered_df[filtered_df["category"] == selected_category]["subcategory"].value_counts()
+)
+subcategories_display = [
+    f"{subcategory} ({count} tickets)" for subcategory, count in subcategory_counts.items()
+]
+subcategories = [subcategory for subcategory in subcategory_counts.index]
+
+selected_subcategory_display = st.sidebar.selectbox(
+    "Subcategory",
+    subcategories_display,
+)
+selected_subcategory = subcategories[subcategories_display.index(selected_subcategory_display)]
+
+# Responsible Department Filter
+responsible_department = st.sidebar.selectbox(
+    "Responsible Department",
+    ["All"] + sorted(filtered_df["responsible_department"].unique()),
+)
+
+# Filter further based on category, subcategory, and responsible department
+filtered_df = filtered_df[
+    (filtered_df["category"] == selected_category)
+    & (filtered_df["subcategory"] == selected_subcategory)
+]
+if responsible_department != "All":
+    filtered_df = filtered_df[filtered_df["responsible_department"] == responsible_department]
+
+# Add a toggle button for sorting
+sort_ascending = st.sidebar.checkbox("Sort by Ticket Volume (Ascending)")
+
+# Display Dashboard Content
+if not filtered_df.empty:
+    # Count tickets for each common issue and sort based on toggle button
+    common_issue_counts = filtered_df["common_issue"].value_counts()
+    sorted_common_issues = common_issue_counts.sort_values(
+        ascending=sort_ascending
+    ).index
+
+    # Display sorted common issues
+    st.markdown(f"### Subcategory: {selected_subcategory} ({len(filtered_df)} total tickets)")
+    for common_issue in sorted_common_issues:
+        group = filtered_df[filtered_df["common_issue"] == common_issue]
+        st.markdown(f"#### Common Issue: {common_issue} ({len(group)} tickets)")
+
+        # Include issue_summary, responsible_department, justification
+        st.markdown(f"**Issue Summary:** {group['issue_summary'].iloc[0]}")
+        st.markdown(f"**Responsible Department:** {group['responsible_department'].iloc[0]}")
+        st.markdown(f"**Justification:** {group['responsible_department_justification'].iloc[0]}")
+
+        # Expandable section for tickets
+        with st.expander("View Tickets"):
+            for _, row in group.iterrows():
+                st.markdown(f"**Ticket Issue:** {row['issue']}")
+                st.markdown(f"**Summary:** {row['summary']}")
+                st.markdown(f"**Sentiment:** {row['sentiment']}")
+                st.markdown(f"**State:** {row['state']}")
+                st.markdown(f"**Read Status:** {row['read']}")
+                st.markdown(f"**Priority:** {row['priority']}")
+                st.markdown(f"[View Details]({row['link']})")
+                st.markdown("---")  # Divider between tickets
+else:
+    st.write("No tickets found for the selected filters.")
