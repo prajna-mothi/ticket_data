@@ -7,4 +7,4 @@ textColor = "black"
 
 [browser]
 layout = "wide"
-gatherUsageStats = false
+
