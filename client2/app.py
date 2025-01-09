@@ -20,6 +20,7 @@ else:
 df = pd.DataFrame(data)
 st.set_page_config(layout="wide")
 
+
 # Streamlit App
 st.title("HyperSight Dashboard")
 
@@ -38,6 +39,10 @@ total_tickets = len(filtered_df)
 
 # Display total tickets in the sidebar
 st.sidebar.markdown(f"**Total Tickets:** {total_tickets}")
+
+# Add company name below "Dashboard Information"
+if not filtered_df.empty:
+    st.sidebar.markdown(f"**Company Name:** {filtered_df['company_name'].iloc[0]}")
 
 # Sidebar Filters
 st.sidebar.header("Filters")
@@ -94,7 +99,7 @@ if responsible_department != "All":
     filtered_df = filtered_df[filtered_df["responsible_department"] == responsible_department]
 
 # Add a toggle button for sorting
-sort_ascending = st.sidebar.checkbox("Sort by Ticket Volume")
+sort_ascending = st.sidebar.checkbox("Sort by Ticket Volume (Ascending)")
 
 # Display Dashboard Content
 if not filtered_df.empty:
@@ -117,14 +122,15 @@ if not filtered_df.empty:
 
         # Expandable section for tickets
         with st.expander("View Tickets"):
-            for _, row in group.iterrows():
-                st.markdown(f"**Ticket Issue:** {row['issue']}")
-                st.markdown(f"**Summary:** {row['summary']}")
-                st.markdown(f"**Sentiment:** {row['sentiment']}")
-                st.markdown(f"**State:** {row['state']}")
-                st.markdown(f"**Read Status:** {row['read']}")
-                st.markdown(f"**Priority:** {row['priority']}")
-                st.markdown(f"[View Details]({row['link']})")
+            for ticket_idx, (_, row) in enumerate(group.iterrows(), start=1):
+                st.markdown(f"**Ticket {ticket_idx}:**")
+                st.markdown(f"- **Ticket Issue:** {row['issue']}")
+                st.markdown(f"- **Summary:** {row['summary']}")
+                st.markdown(f"- **Sentiment:** {row['sentiment']}")
+                st.markdown(f"- **State:** {row['state']}")
+                st.markdown(f"- **Read Status:** {row['read']}")
+                st.markdown(f"- **Priority:** {row['priority']}")
+                st.markdown(f"- [View Details]({row['link']})")
                 st.markdown("---")  # Divider between tickets
 else:
     st.write("No tickets found for the selected filters.")
