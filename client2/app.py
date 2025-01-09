@@ -4,16 +4,6 @@ import requests
 import json
 import pandas as pd
 
-st.set_page_config(
-    layout="wide",
-    theme={
-        "base": "light",
-        "primaryColor": "#000000",
-        "backgroundColor": "#FFFFFF",
-        "textColor": "#000000",
-        "secondaryBackgroundColor": "#F0F2F6",
-    }
-)
 # Construct the download URL
 file_url = f"https://drive.google.com/uc?id=1RZyX1RV7Iqg3OgVxue644pI89v-PNEEB"
 
@@ -27,7 +17,7 @@ else:
 
 
 df = pd.DataFrame(data)
-#st.set_page_config(layout="wide")
+st.set_page_config(layout="wide")
 
 
 
