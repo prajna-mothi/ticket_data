@@ -27,6 +27,10 @@ st.title("HyperSight Dashboard")
 # Sidebar Content
 st.sidebar.header("Dashboard Information")
 
+# Add company name below "Dashboard Information"
+if not df.empty:
+    st.sidebar.markdown(f"**Company Name:** {df['company_name'].iloc[0]}")
+
 # Add a filter for report periods
 report_periods = sorted(df["report_period"].unique())
 selected_report_period = st.sidebar.selectbox("Report Period", report_periods)
@@ -39,10 +43,6 @@ total_tickets = len(filtered_df)
 
 # Display total tickets in the sidebar
 st.sidebar.markdown(f"**Total Tickets:** {total_tickets}")
-
-# Add company name below "Dashboard Information"
-if not filtered_df.empty:
-    st.sidebar.markdown(f"**Company Name:** {filtered_df['company_name'].iloc[0]}")
 
 # Sidebar Filters
 st.sidebar.header("Filters")
