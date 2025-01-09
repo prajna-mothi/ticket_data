@@ -15,11 +15,9 @@ else:
     st.error("Failed to load the sensitive file from Google Drive.")
 
 
-
 df = pd.DataFrame(data)
+
 st.set_page_config(layout="wide")
-
-
 
 # Streamlit App
 st.title("HyperSight Dashboard")
@@ -69,17 +67,20 @@ selected_category_display = st.sidebar.selectbox(
 )
 selected_category = categories[categories_display.index(selected_category_display)]
 
-# Add ticket counts to the subcategories
+# Add ticket counts to the subcategories (Themes) sorted by ticket count
 subcategory_counts = (
-    filtered_df[filtered_df["category"] == selected_category]["subcategory"].value_counts()
+    filtered_df[filtered_df["category"] == selected_category]["subcategory"]
+    .value_counts()
+    .sort_values(ascending=False)  # Sort subcategories by ticket count (descending)
 )
+
 subcategories_display = [
     f"{subcategory} ({count} tickets)" for subcategory, count in subcategory_counts.items()
 ]
 subcategories = [subcategory for subcategory in subcategory_counts.index]
 
 selected_subcategory_display = st.sidebar.selectbox(
-    "Subcategory",
+    "Theme",
     subcategories_display,
 )
 selected_subcategory = subcategories[subcategories_display.index(selected_subcategory_display)]
@@ -110,27 +111,22 @@ if not filtered_df.empty:
     ).index
 
     # Display sorted common issues with numbering
-    st.markdown(f"### Subcategory: {selected_subcategory} ({len(filtered_df)} total tickets)")
+    st.markdown(f"### {selected_subcategory} ({len(filtered_df)} total tickets)")
     for idx, common_issue in enumerate(sorted_common_issues, start=1):
         group = filtered_df[filtered_df["common_issue"] == common_issue]
-        st.markdown(f"#### {idx}. Common Issue: {common_issue} ({len(group)} tickets)")
+        st.markdown(f"#### {idx}. {common_issue} ({len(group)} tickets)")
 
         # Include issue_summary, responsible_department, justification
-        st.markdown(f"**Issue Summary:** {group['issue_summary'].iloc[0]}")
+        st.markdown(f"**Summary:** {group['issue_summary'].iloc[0]}")
         st.markdown(f"**Responsible Department:** {group['responsible_department'].iloc[0]}")
-        st.markdown(f"**Justification:** {group['responsible_department_justification'].iloc[0]}")
-
+    
         # Expandable section for tickets
         with st.expander("View Tickets"):
             for ticket_idx, (_, row) in enumerate(group.iterrows(), start=1):
                 st.markdown(f"**Ticket {ticket_idx}:**")
                 st.markdown(f"- **Ticket Issue:** {row['issue']}")
-                st.markdown(f"- **Summary:** {row['summary']}")
-                st.markdown(f"- **Sentiment:** {row['sentiment']}")
-                st.markdown(f"- **State:** {row['state']}")
-                st.markdown(f"- **Read Status:** {row['read']}")
-                st.markdown(f"- **Priority:** {row['priority']}")
-                st.markdown(f"- [View Details]({row['link']})")
+                st.markdown(f"- **Ticket Summary:** {row['summary']}")
+                st.markdown(f"- [View Issue]({row['link']})")
                 st.markdown("---")  # Divider between tickets
 else:
     st.write("No tickets found for the selected filters.")
