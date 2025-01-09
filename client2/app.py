@@ -18,8 +18,14 @@ else:
 
 
 df = pd.DataFrame(data)
-st.set_page_config(layout="wide")
+#st.set_page_config(layout="wide")
 
+
+st.set_page_config(
+    layout="wide",
+    initial_sidebar_state="auto",
+    theme={"base": "light", "primaryColor": "blue", "backgroundColor": "white", "textColor": "black"}
+)
 
 # Streamlit App
 st.title("HyperSight Dashboard")
